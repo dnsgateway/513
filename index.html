@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digit - Self-Custody Crypto Wallet</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    :root {
+      --bg-color: #fafafa;
+      --text-color: #0b0b0b;
+      --card-bg: #fff;
+      --link-color: #1a73e8;
+      --screen-bg: #0b0b0b;
+      --nav-bg: #111;
+      --footer-bg: #f1f1f1;
+      --footer-text: #555;
+    }
+
+    body.dark {
+      --bg-color: #0b0b0b;
+      --text-color: #f5f5f5;
+      --card-bg: #121212;
+      --link-color: #00ffff;
+      --screen-bg: #1a1a1a;
+      --nav-bg: #000;
+      --footer-bg: #111;
+      --footer-text: #aaa;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: background 0.5s, color 0.5s;
+      overflow-x: hidden;
+    }
+
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 50px;
+      background-color: var(--card-bg);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-color); }
+    header a { text-decoration: none; color: var(--link-color); font-weight: 500; font-size: 1rem; }
+
+    main {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+      padding: 50px;
+      gap: 60px;
+    }
+
+    .text-section { max-width: 420px; position: relative; z-index: 2; }
+    .text-section h2 { font-size: 2.7rem; font-weight: 700; margin-bottom: 10px; line-height: 1.2; }
+    .text-section p { font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px; }
+    .text-section button {
+      background-color: var(--link-color);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 14px 28px;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(26,115,232,0.5);
+      transition: all 0.4s;
+    }
+    .text-section button:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(26,115,232,0.8); }
+
+    /* iPhone 12 Mockup */
+    .iphone-frame {
+      position: relative;
+      width: 375px;
+      height: 812px;
+      border: 14px solid #000;
+      border-radius: 50px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      transition: all 0.6s ease;
+    }
+
+    .iphone-notch {
+      position: absolute;
+      top: 0;
+      width: 210px;
+      height: 30px;
+      background: #000;
+      border-bottom-left-radius: 14px;
+      border-bottom-right-radius: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+    }
+
+    .screen {
+      width: 92%;
+      height: 92%;
+      background: var(--screen-bg);
+      border-radius: 40px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen-content { flex: 1; position: relative; overflow: hidden; padding: 15px; }
+
+    .view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transform: translateX(100%); transition: transform 0.5s ease, opacity 0.5s ease; color: #fff; }
+    .view.active { opacity: 1; transform: translateX(0); z-index: 2; }
+
+    /* Wallet View */
+    .wallet-view .balance { text-align: center; margin-bottom: 15px; }
+    .wallet-view .balance h3 { font-size: 2rem; text-shadow: 0 0 10px #4a90e2; margin:0; }
+    .wallet-view .balance p { color: #43d17b; margin:0; font-size: 0.9rem; }
+
+    .wallet-view .actions {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    .wallet-view .actions button {
+      background-color: #1a73e8;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 16px;
+      color: #fff;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(26,115,232,0.5);
+      transition: transform 0.3s;
+    }
+    .wallet-view .actions button.swap { background-color: #7b61ff; box-shadow:0 0 10px rgba(123,97,255,0.6); }
+    .wallet-view .actions button.send { background-color:#43d17b; box-shadow:0 0 10px rgba(67,209,123,0.6); }
+    .wallet-view .actions button.exchange { background-color:#ffaf40; box-shadow:0 0 10px rgba(255,175,64,0.6); }
+    .wallet-view .actions button:hover { transform: scale(1.05); }
+
+    .wallet-view .assets, .wallet-view .transactions {
+      background-color: #1a1a1a;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 12px;
+      box-shadow: 0 0 10px rgba(0,255,255,0.2);
+    }
+
+    .wallet-view h4 { margin:0 0 8px; font-size:0.9rem; color:#bbb; }
+    .asset-item, .transactions p { display:flex; justify-content:space-between; margin:4px 0; }
+
+    /* Divider above bottom nav */
+    .divider { height:1px; background:rgba(255,255,255,0.2); margin:6px 0; }
+
+    .bottom-nav {
+      display:flex;
+      justify-content:space-around;
+      background-color: var(--nav-bg);
+      padding:12px 0;
+      border-top:1px solid #222;
+    }
+    .bottom-nav button {
+      background:none; border:none; font-size:1.2rem; color:#aaa; cursor:pointer; transition:color 0.3s;
+    }
+    .bottom-nav button.active { color:#00ffff; text-shadow:0 0 10px #00ffff; }
+
+    /* Sidebar Menu */
+    .sidebar {
+      position:absolute;
+      top:0; left:-70%;
+      width:70%;
+      height:100%;
+      background:#111;
+      border-right:1px solid #222;
+      box-shadow:2px 0 15px rgba(0,255,255,0.2);
+      z-index: 20;
+      padding:20px;
+      transition:left 0.4s ease;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .sidebar.active { left:0; }
+    .sidebar button { background:none; border:none; color:#00ffff; font-size:1rem; text-align:left; cursor:pointer; }
+    .menu-toggle {
+      position:absolute;
+      top:10px;
+      left:10px;
+      width:32px;
+      height:32px;
+      background:#1a73e8;
+      border-radius:8px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:25;
+      transition: transform 0.3s ease;
+    }
+    .menu-toggle.active { transform: rotate(90deg); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Digit</h1>
+    <a href="#how-it-works">How it Works</a>
+  </header>
+
+  <main>
+    <div class="text-section">
+      <h2>Self-Custody Crypto Wallet</h2>
+      <p>Manage, swap, trade, and spend your crypto like cash — all in one place. Connect to Web3 and explore DApps securely with Digit.</p>
+      <button id="getStarted">Get Started</button>
+    </div>
+
+    <div class="iphone-frame">
+      <div class="iphone-notch"></div>
+      <div class="screen">
+        <div class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></div>
+        <div class="sidebar" id="sidebar">
+          <button data-view="wallet"><i class="fas fa-wallet"></i> Wallet</button>
+          <button data-view="settings"><i class="fas fa-cog"></i> Settings</button>
+          <button data-view="messages"><i class="fas fa-envelope"></i> Messages</button>
+          <button data-view="profile"><i class="fas fa-user"></i> Profile</button>
+        </div>
+
+        <div class="screen-content">
+          <div class="view wallet-view active" id="wallet">
+            <div class="balance">
+              <h3>$12,345.67</h3>
+              <p>+3.45%</p>
+            </div>
+            <div class="actions">
+              <button>Spend</button>
+              <button class="swap">Swap</button>
+              <button class="send">Send</button>
+              <button class="exchange">Exchange</button>
+            </div>
+            <div class="assets">
+              <h4>My Assets</h4>
+              <div class="asset-item"><span>Bitcoin</span><span>0.25 BTC</span></div>
+              <div class="asset-item"><span>Ethereum</span><span>2.35 ETH</span></div>
+            </div>
+            <div class="transactions">
+              <h4>Recent Transactions</h4>
+              <p><span>Sent to John</span><span>$100</span></p>
+            </div>
+          </div>
+
+          <div class="view" id="settings">
+            <h3>Settings</h3>
+            <p>Switch themes, manage notifications, and secure your wallet.</p>
+            <button id="toggleTheme" style="background:#1a73e8;border:none;padding:10px 20px;border-radius:8px;color:white;">
+              Toggle Dark Mode
+            </button>
+          </div>
+
+          <div class="view" id="messages">
+            <h3>Messages</h3>
+            <p>No new messages. Stay tuned for updates.</p>
+          </div>
+
+          <div class="view" id="profile">
+            <h3>Profile</h3>
+            <p>User: @digituser</p>
+            <p>Email: user@digitwallet.com</p>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="bottom-nav">
+          <button class="active" data-view="wallet"><i class="fas fa-wallet"></i></button>
+          <button data-view="settings"><i class="fas fa-cog"></i></button>
+          <button data-view="messages"><i class="fas fa-envelope"></i></button>
+          <button data-view="profile"><i class="fas fa-user"></i></button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    © 2025 Digit. Powered by <a href="https://wordpress.org" target="_blank">WordPress</a>.
+  </footer>
+
+  <button class="theme-toggle" id="globalToggle">🌓</button>
+
+  <!-- Connect Wallet Modal -->
+  <div class="modal" id="walletModal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeModal">&times;</span>
+      <h3>Connect Your Wallet</h3>
+      <div class="wallet-option" data-wallet="MetaMask">🦊 MetaMask</div>
+      <div class="wallet-option" data-wallet="WalletConnect">🔗 WalletConnect</div>
+      <p id="walletStatus"></p>
+    </div>
+  </div>
+
+  <script>
+    const navButtons = document.querySelectorAll('.bottom-nav button');
+    const sidebarButtons = document.querySelectorAll('.sidebar button');
+    const views = document.querySelectorAll('.view');
+    let activeView = document.querySelector('.view.active');
+    const body = document.body;
+    const toggleThemeBtn = document.getElementById('toggleTheme');
+    const globalToggle = document.getElementById('globalToggle');
+    const modal = document.getElementById('walletModal');
+    const closeModal = document.getElementById('closeModal');
+    const walletOptions = document.querySelectorAll('.wallet-option');
+    const walletStatus = document.getElementById('walletStatus');
+
+    navButtons.forEach(btn => btn.addEventListener('click', () => { switchView(btn.dataset.view); }));
+    sidebarButtons.forEach(btn => btn.addEventListener('click', () => { switchView(btn.dataset.view); closeSidebar(); }));
+
+    function switchView(viewId){
+      const target = document.getElementById(viewId);
+      if(target===activeView) return;
+      navButtons.forEach(b=>b.classList.remove('active'));
+      sidebarButtons.forEach(b=>b.classList.remove('active'));
+      document.querySelector(`.bottom-nav button[data-view="${viewId}"]`).classList.add('active');
+      document.querySelector(`.sidebar button[data-view="${viewId}"]`).classList.add('active');
+      activeView.classList.remove('active');
+      target.classList.add('active');
+      activeView=target;
+    }
+
+    function toggleTheme() { body.classList.toggle('dark'); globalToggle.textContent = body.classList.contains('dark') ? '☀️' : '🌙'; }
+    toggleThemeBtn.addEventListener('click', toggleTheme);
+    globalToggle.addEventListener('click', toggleTheme);
+
+    document.getElementById('getStarted').addEventListener('click', () => { modal.classList.add('active'); });
+    closeModal.addEventListener('click', () => { modal.classList.remove('active'); walletStatus.textContent=''; });
+    walletOptions.forEach(opt => opt.addEventListener('click', ()=>{
+      walletStatus.textContent=`🔒 Connecting to ${opt.dataset.wallet}...`;
+      walletStatus.style.color='#00ffff';
+      setTimeout(()=>{ walletStatus.textContent=`✅ ${opt.dataset.wallet} connected successfully!`; },1500);
+    }));
+
+    // Sidebar toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    menuToggle.addEventListener('click', ()=>{
+      sidebar.classList.toggle('active');
+      menuToggle.classList.toggle('active');
+    });
+    function closeSidebar(){ sidebar.classList.remove('active'); menuToggle.classList.remove('active'); }
+  </script>
+</body>
+</html>
