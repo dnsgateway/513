@@ -109,6 +109,7 @@
   /* More screen */
   .more-list{display:flex;flex-direction:column;gap:10px;padding:12px}
   .more-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:var(--bg);border:1px solid rgba(15,23,42,0.04);cursor:pointer}
+  .more-item:hover{background:rgba(47,109,246,0.03)}
 
   /* bottom nav */
   .bottom{border-top:1px solid rgba(15,23,42,0.04);display:flex;justify-content:space-around;padding:10px 6px;background:transparent}
@@ -306,7 +307,6 @@ const pageCount = 4;
 function sizePages() {
   const w = viewportEl.clientWidth;
   document.querySelectorAll('.page').forEach(p => p.style.minWidth = w + 'px');
-  // update transform to current index (in case of resize)
   pagesEl.style.transform = `translateX(${-currentIndex * w}px)`;
 }
 window.addEventListener('resize', sizePages);
@@ -318,19 +318,14 @@ sizePages();
 function goToIndex(newIndex) {
   if (newIndex === currentIndex) return;
   const w = viewportEl.clientWidth;
-  // set active nav style
   navBtns.forEach(btn => btn.classList.remove('active'));
   navBtns[newIndex].classList.add('active');
-
-  // animate transform
   pagesEl.style.transform = `translateX(${-newIndex * w}px)`;
   currentIndex = newIndex;
 }
 
 /* attach nav handlers */
-navBtns.forEach(btn=>{
-  btn.addEventListener('click', ()=> goToIndex(Number(btn.dataset.index)));
-});
+navBtns.forEach(btn=> btn.addEventListener('click', ()=> goToIndex(Number(btn.dataset.index))));
 
 /* ---------------------------
    Dark mode toggle (persistent)
@@ -375,7 +370,7 @@ document.querySelectorAll('.buy').forEach(b=>{
   b.addEventListener('click', ()=> openModal('Offer Purchased', `You redeemed: <strong>${b.dataset.offer}</strong>. (Demo purchase)`));
 });
 
-/* page swipe by drag (touch support) - optional */
+/* page swipe by drag (touch support) */
 let startX = 0, isDragging = false;
 viewportEl.addEventListener('touchstart', e => {
   startX = e.touches[0].clientX; isDragging = true;
@@ -426,7 +421,6 @@ const balanceChart = new Chart(ctx, {
 
 /* update chart colors when theme changes */
 const observer = new MutationObserver(()=> {
-  // update chart color when body.classList changes
   const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#2f6df6';
   balanceChart.data.datasets[0].borderColor = accent;
   balanceChart.data.datasets[0].backgroundColor = document.body.classList.contains('dark') ? 'rgba(94,161,255,0.08)' : 'rgba(47,109,246,0.10)';
